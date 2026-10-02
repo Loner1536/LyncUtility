@@ -1,9 +1,21 @@
--- Compiled with rotor v2.2.1
+-- Compiled with rotor v2.3.0
 local TS = _G[script]
-local exports = {}
-exports.partialDeep = TS.import(script, script, "partialDeep").partialDeep
-exports.replecsCodec = TS.import(script, script, "replecsCodec").replecsCodec
-exports.enumFromKeys = TS.import(script, script, "enumFromKeys").enumFromKeys
--- Pulls in `@rbxts/charm-sync` at require-time -- optional peer dep, see package.json.
-exports.charmCodec = TS.import(script, script, "charmCodec").charmCodec
-return exports
+local serdes = TS.import(script, script, "codec").serdes
+local collect = TS.import(script, script, "packet").collect
+local _store = TS.import(script, script, "store")
+local hydrate = _store.hydrate
+local sync = _store.sync
+local LyncUtility = {
+	serdes = serdes,
+	collect = collect,
+	hydrate = hydrate,
+	sync = sync,
+}
+local default = LyncUtility
+return {
+	serdes = serdes,
+	collect = collect,
+	hydrate = hydrate,
+	sync = sync,
+	default = default,
+}

@@ -1,23 +1,26 @@
 {
 	"name": "@rbxts/lync-utils",
-	"version": "0.1.0",
-	"description": "Typed utilities for Lync: derive diff codecs, compress charm-sync payloads, build enums.",
+	"version": "1.0.0",
+	"description": "Typed roblox-ts adapters for Lync, Charm, and Replecs.",
 	"main": "out/init.luau",
 	"types": "out/index.d.ts",
 	"files": ["out"],
 	"license": "MIT",
 	"author": "Loner1536",
-	"keywords": ["roblox", "roblox-ts", "lync", "charm", "charm-sync", "codec", "networking", "buffer"],
+	"keywords": ["roblox", "roblox-ts", "lync", "charm", "replecs", "networking", "replication"],
 	"scripts": {
 		"build": "rotor build"
 	},
+	"trustedDependencies": ["@rotor-rbx/rotor"],
 	"dependencies": {
-		"@rbxts/charm-sync": "^0.4.0",
-		"@rbxts/lync": "github:Loner1536/lync#main"
+		"@rbxts/charm": "^0.11.0",
+		"@rbxts/lync": "github:Axp3cter/Lync#main",
+		"@rbxts/replecs": "^0.3.1"
 	},
 	"devDependencies": {
 		"@rbxts/compiler-types": "^3.0.0-types.0",
-		"@rbxts/types": "^1.0.800",
+		"@rbxts/types": "^1.0.939",
+		"@rotor-rbx/rotor": "^2.2.1",
 		"typescript": "^5.5.0"
 	}
 }
