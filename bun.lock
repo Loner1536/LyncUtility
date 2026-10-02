@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@rbxts/lync-utils",
+      "name": "@rbxts/lync-utility",
       "dependencies": {
         "@rbxts/charm": "^0.11.0",
         "@rbxts/lync": "github:Axp3cter/Lync#main",

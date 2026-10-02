@@ -1,5 +1,5 @@
 {
-	"name": "lync-utils",
+	"name": "LyncUtility",
 	"globIgnorePaths": ["**/package.json", "**/tsconfig.json"],
 	"tree": {
 		"$path": "out"

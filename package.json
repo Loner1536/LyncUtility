@@ -1,5 +1,5 @@
 {
-	"name": "@rbxts/lync-utils",
+	"name": "@rbxts/lync-utility",
 	"version": "1.0.0",
 	"description": "Typed roblox-ts adapters for Lync, Charm, and Replecs.",
 	"main": "out/init.luau",

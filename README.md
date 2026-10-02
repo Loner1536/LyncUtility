@@ -1,4 +1,4 @@
-# @rbxts/lync-utils
+# @rbxts/lync-utility
 
 Small, typed adapters for using [Lync](https://github.com/Axp3cter/Lync) with
 [Charm](https://github.com/littensy/charm) and
@@ -16,7 +16,7 @@ The package provides four focused utilities:
 Install directly from GitHub:
 
 ```sh
-bun add github:Loner1536/lync-utils#main
+bun add github:Loner1536/LyncUtility#main
 ```
 
 Or add it under the roblox-ts package name explicitly:
@@ -24,7 +24,7 @@ Or add it under the roblox-ts package name explicitly:
 ```json
 {
     "dependencies": {
-        "@rbxts/lync-utils": "github:Loner1536/lync-utils#main"
+        "@rbxts/lync-utility": "github:Loner1536/LyncUtility#main"
     }
 }
 ```
@@ -63,7 +63,7 @@ same component and codec.
 ```ts
 import Lync from "@rbxts/lync";
 import replecs from "@rbxts/replecs";
-import { serdes } from "@rbxts/lync-utils";
+import { serdes } from "@rbxts/lync-utility";
 import { world } from "@rbxts/jecs";
 
 const Health = world.component<number>();
@@ -124,7 +124,7 @@ for your framework's shutdown or teardown hook.
 **`src/server/network/enemies.ts`**
 
 ```ts
-import { sync } from "@rbxts/lync-utils";
+import { sync } from "@rbxts/lync-utility";
 import { World } from "../../shared/network/world";
 import { enemies } from "../../shared/stores/enemies";
 
@@ -138,7 +138,7 @@ On the client, hydrate that same store from replicated set events.
 **`src/client/network/enemies.ts`**
 
 ```ts
-import { hydrate } from "@rbxts/lync-utils";
+import { hydrate } from "@rbxts/lync-utility";
 import { World } from "../../shared/network/world";
 import { enemies } from "../../shared/stores/enemies";
 
@@ -175,7 +175,7 @@ it can accumulate packet values.
 **`src/client/systems/hits.ts`**
 
 ```ts
-import { collect } from "@rbxts/lync-utils";
+import { collect } from "@rbxts/lync-utility";
 import { Combat } from "../../shared/network/combat";
 
 const hits = collect(Combat.hit);
