@@ -31,9 +31,34 @@ Or add it under the roblox-ts package name explicitly:
 
 The compiled Luau in `out/` is committed, so consumers do not need to build the package.
 
+## Example project layout
+
+The examples below use this structure. The filenames are suggestions; the important part is that
+Lync definitions and shared state live somewhere both the server and client can import.
+
+```text
+src/
+├── client/
+│   ├── network/enemies.ts
+│   └── systems/hits.ts
+├── server/
+│   └── network/enemies.ts
+└── shared/
+    ├── ecs/components.ts
+    ├── network/
+    │   ├── combat.ts
+    │   └── world.ts
+    └── stores/enemies.ts
+```
+
 ## Replecs serialization
 
 `serdes(codec, options?)` wraps a Lync codec as a Replecs `SerdesTable`.
+
+Place component declarations and their serializers in a shared ECS module so both sides use the
+same component and codec.
+
+**`src/shared/ecs/components.ts`**
 
 ```ts
 import Lync from "@rbxts/lync";
@@ -65,36 +90,61 @@ With variants disabled, `serdes` throws if the codec unexpectedly produces insta
 `sync` and `hydrate` connect a Charm store to a Lync replicated set. Store values may be either a
 `Map<number, T>` or a `Record<string, T>` whose keys are numeric strings.
 
+Define the replicated set in a shared network module.
+
+**`src/shared/network/world.ts`**
+
 ```ts
-import { atom } from "@rbxts/charm";
 import Lync from "@rbxts/lync";
-import { hydrate, sync } from "@rbxts/lync-utils";
 
-interface EnemyState {
-    health: number;
-}
-
-const enemies = atom(new Map<number, EnemyState>());
-const { replicatedEnemies } = Lync.define("World", {
+export const World = Lync.define("World", {
     replicatedEnemies: Lync.replicate(Lync.struct({
         health: Lync.int(0, 100),
     })),
 });
 ```
 
-On the server, mirror store changes into the replicated set:
+Keep the Charm atom and its value type in a shared store module.
+
+**`src/shared/stores/enemies.ts`**
 
 ```ts
-const stopSyncing = sync(enemies, replicatedEnemies);
+import { atom } from "@rbxts/charm";
 
-// Call during cleanup when the store should stop replicating.
-stopSyncing();
+export interface EnemyState {
+    health: number;
+}
+
+export const enemies = atom(new Map<number, EnemyState>());
 ```
 
-On the client, hydrate the local store from replicated set events:
+On the server, mirror store changes into the replicated set. Retain the returned cleanup function
+for your framework's shutdown or teardown hook.
+
+**`src/server/network/enemies.ts`**
 
 ```ts
-hydrate(replicatedEnemies, enemies);
+import { sync } from "@rbxts/lync-utils";
+import { World } from "../../shared/network/world";
+import { enemies } from "../../shared/stores/enemies";
+
+export function startEnemyReplication() {
+    return sync(enemies, World.replicatedEnemies);
+}
+```
+
+On the client, hydrate that same store from replicated set events.
+
+**`src/client/network/enemies.ts`**
+
+```ts
+import { hydrate } from "@rbxts/lync-utils";
+import { World } from "../../shared/network/world";
+import { enemies } from "../../shared/stores/enemies";
+
+export function startEnemyHydration() {
+    hydrate(World.replicatedEnemies, enemies);
+}
 ```
 
 Both helpers create new maps, records, and values when applying changes so Charm observes immutable
@@ -107,23 +157,38 @@ present in the store.
 current batch and clears the buffer, which is useful for processing network events inside a game-loop
 system.
 
+Declare the packet alongside your other shared Lync definitions.
+
+**`src/shared/network/combat.ts`**
+
 ```ts
 import Lync from "@rbxts/lync";
-import { collect } from "@rbxts/lync-utils";
 
-const { hit } = Lync.define("Combat", {
+export const Combat = Lync.define("Combat", {
     hit: Lync.packet(Lync.struct({ damage: Lync.int(0, 255) })),
 });
-const hits = collect(hit);
+```
 
-function update() {
+Create and drain the collector in a client system. Keep the collector alive between update calls so
+it can accumulate packet values.
+
+**`src/client/systems/hits.ts`**
+
+```ts
+import { collect } from "@rbxts/lync-utils";
+import { Combat } from "../../shared/network/combat";
+
+const hits = collect(Combat.hit);
+
+export function updateHits() {
     for (const hit of hits.iter()) {
         print(`Received ${hit.damage} damage`);
     }
 }
 
-// Stop listening and discard buffered values during cleanup.
-hits.disconnect();
+export function stopHits() {
+    hits.disconnect();
+}
 ```
 
 ## API
