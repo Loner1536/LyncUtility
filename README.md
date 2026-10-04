@@ -87,8 +87,9 @@ With variants disabled, `serdes` throws if the codec unexpectedly produces insta
 
 ## Charm and replicated sets
 
-`sync` and `hydrate` connect a Charm store to a Lync replicated set. Store values may be either a
-`Map<number, T>` or a `Record<string, T>` whose keys are numeric strings.
+`sync` and `hydrate` connect a Charm store to a Lync replicated set. Stores use `Map<number, T>` so
+Lync's numeric replicated-set IDs stay numeric without unreliable runtime type detection. Maps nested
+inside each replicated value remain ordinary schema data and may use any key codec supported by Lync.
 
 Define the replicated set in a shared network module.
 

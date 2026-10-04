@@ -1,14 +1,6 @@
 -- Compiled with rotor v2.3.0
 local TS = _G[script]
 local subscribe = TS.import(script, TS.getModule(script, "@rbxts", "charm").src).subscribe
-local function isMap(state)
-	local _state = state
-	local _condition = type(_state) == "table"
-	if _condition then
-		_condition = state.has ~= nil
-	end
-	return _condition
-end
 local function copy(value)
 	local _object = {}
 	if value then
@@ -26,12 +18,6 @@ local function copyMap(state)
 	return result
 end
 local function setValue(state, id, value)
-	if not isMap(state) then
-		local _object = table.clone(state)
-		setmetatable(_object, nil)
-		_object[tostring(id)] = copy(value)
-		return _object
-	end
 	local updated = copyMap(state)
 	local _id = id
 	local _arg1 = copy(value)
@@ -39,13 +25,6 @@ local function setValue(state, id, value)
 	return updated
 end
 local function removeValue(state, id)
-	if not isMap(state) then
-		local _object = table.clone(state)
-		setmetatable(_object, nil)
-		local updated = _object
-		updated[tostring(id)] = nil
-		return updated
-	end
 	local updated = copyMap(state)
 	local _id = id
 	updated[_id] = nil
@@ -74,19 +53,7 @@ local function write(container, id, value)
 		container:update(id, record)
 	end
 end
-local function syncRecord(container, current, previous)
-	for key, value in pairs(current) do
-		if previous[key] ~= value then
-			write(container, tonumber(key), value)
-		end
-	end
-	for key in pairs(previous) do
-		if current[key] == nil then
-			container:remove(tonumber(key))
-		end
-	end
-end
-local function syncMap(container, current, previous)
+local function syncState(container, current, previous)
 	for id, value in current do
 		if previous[id] ~= value then
 			write(container, id, value)
@@ -101,11 +68,7 @@ end
 --* Mirrors a server-owned Charm store into a Lync replicated set. 
 local function sync(getter, container)
 	return subscribe(getter, function(current, previous)
-		if isMap(current) then
-			syncMap(container, current, if isMap(previous) then previous else {})
-		else
-			syncRecord(container, current, if not isMap(previous) and previous ~= nil then previous else {})
-		end
+		return syncState(container, current, previous or {})
 	end)
 end
 return {
